@@ -1,0 +1,20 @@
+[package]
+name = "basic"
+authors.workspace = true
+publish.workspace = true
+version.workspace = true
+edition.workspace = true
+description.workspace = true
+license.workspace = true
+
+[dependencies]
+feature-scope = { version = "*", path = "../../packages/feature-scope" }
+
+[build-dependencies]
+anyhow = { workspace = true }
+
+feature-scope = { version = "*", path = "../../packages/feature-scope" }
+
+[package.metadata.feature-scope]
+default = ["a"]
+a = []
