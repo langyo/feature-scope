@@ -1,5 +1,9 @@
 # feature-scope
 
+![Crates.io License](https://img.shields.io/crates/l/feature-scope)
+[![Crates.io Version](https://img.shields.io/crates/v/feature-scope)](https://docs.rs/feature-scope)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/langyo/feature-scope/test.yml)
+
 ## Introduction
 
 A helper library that enables workspace crates to independently control their required features without cross-package interference.

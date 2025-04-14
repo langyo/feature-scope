@@ -9,10 +9,11 @@ codegen-units = 1
 panic = "abort"
 
 [workspace.package]
-authors = ["langyo <langyo.china@gmail.com>"]
 publish = true
+authors = ["langyo <langyo.china@gmail.com>"]
 description = "A helper library that enables workspace crates to independently control their required features without cross-package interference"
 license = "Apache-2.0"
+repository = "https://github.com/langyo/feature-scope"
 
 version = "0.1.0"
 edition = "2021"
