@@ -1,0 +1,20 @@
+[package]
+name = "types"
+version.workspace = true
+edition.workspace = true
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+feature-scope = { workspace = true }
+
+[build-dependencies]
+anyhow = { workspace = true }
+
+feature-scope = { workspace = true }
+
+[package.metadata.feature-scope]
+a = []
+b = []
