@@ -8,7 +8,7 @@ pub fn test() {
     println!("b type");
 }
 
-// TODO: Not completed yet
+#[feature_scope::feature_scope_default]
 pub fn test() {
     println!("default type");
 }

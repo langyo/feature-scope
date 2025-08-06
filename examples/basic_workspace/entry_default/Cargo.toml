@@ -1,5 +1,5 @@
 [package]
-name = "entry_a"
+name = "entry_default"
 version.workspace = true
 edition.workspace = true
 publish = false
@@ -13,6 +13,7 @@ anyhow = { workspace = true }
 
 feature-scope = { workspace = true }
 
+
 [[package.metadata.feature-scope]]
 package = "_types"
-features = ["a"]
+features = []

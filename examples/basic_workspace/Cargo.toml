@@ -1,5 +1,5 @@
 [workspace]
-members = ["types", "entry_a", "entry_b"]
+members = ["types", "entry_a", "entry_b", "entry_default"]
 resolver = "2"
 
 [profile.release]

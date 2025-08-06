@@ -13,5 +13,6 @@ anyhow = { workspace = true }
 
 feature-scope = { workspace = true }
 
-[package.metadata.feature-scope]
-default = ["b"]
+[[package.metadata.feature-scope]]
+package = "_types"
+features = ["b"]

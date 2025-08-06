@@ -12,6 +12,6 @@ anyhow = { workspace = true }
 
 feature-scope = { version = "*", path = "../../packages/feature-scope" }
 
-[package.metadata.feature-scope]
+[package.metadata.feature-scope-decl]
 default = ["a"]
 a = []
