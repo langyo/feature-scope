@@ -13,5 +13,7 @@ anyhow = { workspace = true }
 feature-scope = { version = "*", path = "../../packages/feature-scope" }
 
 [package.metadata.feature-scope-decl]
+# If default specifies features, the original default feature will be overridden,
+# and all `#[feature_scope_default]` in the source code will be ignored.
 default = ["a"]
 a = []

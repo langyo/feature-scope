@@ -13,6 +13,20 @@ pub fn feature_scope(attr: TokenStream, input: TokenStream) -> TokenStream {
     quote! {
         #[allow(unexpected_cfgs)]
         #[cfg(#ident)]
+        #[cfg(not(__scope_default))]
+        #input
+    }
+    .into()
+}
+
+#[proc_macro_attribute]
+pub fn feature_scope_default(_attr: TokenStream, input: TokenStream) -> TokenStream {
+    let input = proc_macro2::TokenStream::from(input);
+    let _ = parse_macro_input!(_attr as parser::FeatureScopeDefault);
+
+    quote! {
+        #[allow(unexpected_cfgs)]
+        #[cfg(__scope_default)]
         #input
     }
     .into()
