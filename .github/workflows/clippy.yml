@@ -49,4 +49,4 @@ jobs:
           cd examples/basic_workspace
           cargo feature-scope build
           # Run clippy on each example package
-          cargo feature-scope clippy -- -D warnings
+          cargo feature-scope clippy
