@@ -16,6 +16,6 @@ edition = "2021"
 version = "0.1.0"
 
 [workspace.dependencies]
-feature-scope = { path = "../../packages/feature-scope" }
+feature-scope = { path = "../../packages/macros" }
 
 anyhow = "^1"

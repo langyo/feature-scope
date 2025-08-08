@@ -1,5 +1,5 @@
 [package]
-name = "feature-scope-macros"
+name = "cargo-feature-scope"
 authors.workspace = true
 publish.workspace = true
 version.workspace = true
@@ -8,12 +8,9 @@ description.workspace = true
 license.workspace = true
 repository.workspace = true
 
-[lib]
-proc-macro = true
-
 [dependencies]
 anyhow = { workspace = true }
+serde = { workspace = true }
+toml = { workspace = true }
 
-syn = { version = "^2", features = ["full"] }
-proc-macro2 = "^1"
-quote = "^1"
+clap = { workspace = true }

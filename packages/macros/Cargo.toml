@@ -9,12 +9,10 @@ license.workspace = true
 repository.workspace = true
 
 [lib]
-crate-type = ["cdylib", "rlib"]
+proc-macro = true
 
 [dependencies]
-_macros = { path = "../feature-scope-macros", package = "feature-scope-macros", version = "0.1.0" }
-
+proc-macro2 = "1.0"
+quote = "1.0"
+syn = { version = "2.0", features = ["full"] }
 anyhow = { workspace = true }
-serde = { workspace = true }
-toml = { workspace = true }
-cargo-lock = { workspace = true }

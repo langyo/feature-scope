@@ -16,3 +16,4 @@ feature-scope = { workspace = true }
 [[package.metadata.feature-scope]]
 package = "types"
 features = ["b"]
+default-features = false

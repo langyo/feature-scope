@@ -6,13 +6,8 @@ publish = false
 
 [dependencies]
 _types = { path = "../types", package = "types" }
-feature-scope = { workspace = true }
-
-[build-dependencies]
-anyhow = { workspace = true }
 
 feature-scope = { workspace = true }
-
 
 [[package.metadata.feature-scope]]
 package = "types"
