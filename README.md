@@ -4,11 +4,36 @@
 [![Crates.io Version](https://img.shields.io/crates/v/feature-scope)](https://docs.rs/feature-scope)
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/langyo/feature-scope/test.yml)
 
+> **English | [中文](README_zh.md)**
+
 ## Introduction
 
 A helper library that enables workspace crates to independently control their required features without cross-package interference.
 
 > Still in development, the API may change in the future.
+
+## How It Works
+
+This library solves the **feature unification problem** in Rust workspaces by implementing a custom feature scoping mechanism based on Rust's `-cfg` compilation parameters.
+
+### The Problem
+
+In traditional Cargo workspaces, when multiple crates depend on the same library with different feature requirements, Cargo unifies all features together. This can lead to:
+
+- **Feature conflicts**: Different crates requiring mutually exclusive features of the same dependency
+- **Unintended compilation**: Code being compiled with features that weren't explicitly requested
+- **Diamond dependency issues**: Transitive dependencies causing unexpected feature combinations
+
+### The Solution
+
+`feature-scope` bypasses Cargo's feature unification by:
+
+1. **Custom cfg flags**: Instead of using Cargo features, it generates custom `--cfg __scope_<feature>` flags
+2. **CLI wrapper**: The `cargo feature-scope` command intercepts build commands and injects the appropriate cfg flags
+3. **Procedural macros**: `#[feature_scope]` and `#[feature_scope_default]` macros translate your feature declarations into cfg-based conditional compilation
+4. **Independent control**: Each crate in the workspace can specify exactly which features it wants from each dependency
+
+This approach allows different crates in the same workspace to use completely different feature sets from the same dependency without interference, solving the feature unification problem at the compilation level.
 
 ## Installation
 
@@ -28,14 +53,27 @@ cargo install --path packages/cli
 
 ## Quick Start
 
-You must set the `package.metadata.feature-scope` in your `Cargo.toml` file first. It's a table like `features` but with a different purpose. Each crates in the workspace can have its own `package.metadata.feature-scope` table, and the features listed in it will be used to control the visibility of the macros in this crate.
+This library uses a two-step configuration approach:
+
+1. **Declare features** in library crates using `package.metadata.feature-scope-decl`:
 
 ```toml
-[package.metadata.feature-scope]
+# In your library crate's Cargo.toml
+[package.metadata.feature-scope-decl]
 default = ["a"]
 a = []
 b = []
 c = []
+```
+
+1. **Configure feature usage** in consumer crates using `package.metadata.feature-scope`:
+
+```toml
+# In your binary/consumer crate's Cargo.toml
+[[package.metadata.feature-scope]]
+package = "your-library-name"
+features = ["b"]
+default-features = false
 ```
 
 This library depends on the `cargo-feature-scope` CLI tool to provide the correct compiler arguments. You need to use `cargo feature-scope` instead of regular `cargo` commands when building or running your project:
@@ -54,40 +92,31 @@ cargo feature-scope run -p your-package-name
 cargo feature-scope test
 ```
 
-For the macro configuration, you need to call `load` function inside the build script like this:
-
-```rust
-// build.rs
-
-fn main() {
-    // Load the feature scope from the Cargo.toml file.
-    feature_scope::load().unwrap();
-}
-```
-
 Then, you can use the `feature_scope` macro in your code:
 
 ```rust
-// The default feature is `a`, so this function will be available when the `a` feature is enabled.
-#[feature_scope(a)]
-pub fn basic_expand() {
+// This function will be available when feature 'a' is enabled or by default
+#[feature_scope_default(a)]
+pub fn feature_a_function() {
     println!("feature_scope_a");
 }
 
-#[feature_scope(any(b, c))]
-pub fn basic_expand() {
-    println!("feature_scope_b_or_c");
+// This function only compiles when feature 'b' is enabled
+#[feature_scope(b)]
+pub fn feature_b_function() {
+    println!("feature_scope_b");
 }
 
-#[feature_scope(only(a, b, c))]
-compile_error! {
-    // This will cause a compile error if all features are enabled.
-    "This should not be compiled!"
+// This function is available by default
+#[feature_scope_default]
+pub fn default_function() {
+    println!("default function");
 }
 
-
-// prints "feature_scope_a" or "feature_scope_b_c" depending on the feature flag set in Cargo.toml
-basic_expand();
+// Call the appropriate functions based on the feature flags set in Cargo.toml
+feature_a_function();
+feature_b_function();
+default_function();
 ```
 
 ## Examples
@@ -146,3 +175,7 @@ cargo feature-scope build
 cargo feature-scope run -p entry_default
 cargo feature-scope run -p entry_custom
 ```
+
+---
+
+**Note**: Starting from version 0.2.0, all source code is implemented through human-AI collaboration using Copilot. Only architecture design, result review, and commit records involve manual intervention.

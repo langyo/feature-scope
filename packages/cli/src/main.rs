@@ -1,3 +1,56 @@
+//! # feature-scope CLI
+//!
+//! A helper CLI tool that enables workspace crates to independently control their required
+//! features without cross-package interference.
+//!
+//! ## Overview
+//!
+//! This CLI tool provides the correct compiler arguments for the `feature-scope` library.
+//! You need to use `cargo feature-scope` instead of regular `cargo` commands when building
+//! or running your project.
+//!
+//! ## Usage
+//!
+//! ```bash
+//! # Build your project
+//! cargo feature-scope build
+//!
+//! # Run your project
+//! cargo feature-scope run
+//!
+//! # Run a specific package in workspace
+//! cargo feature-scope run -p your-package-name
+//!
+//! # Run tests
+//! cargo feature-scope test
+//! ```
+//!
+//! ## Installation
+//!
+//! ```bash
+//! cargo install cargo-feature-scope
+//! ```
+//!
+//! ## Configuration
+//!
+//! This tool works with a two-step configuration in your `Cargo.toml`:
+//!
+//! 1. **Declare features** in library crates:
+//! ```toml
+//! [package.metadata.feature-scope-decl]
+//! default = ["a"]
+//! a = []
+//! b = []
+//! ```
+//!
+//! 2. **Configure feature usage** in consumer crates:
+//! ```toml
+//! [[package.metadata.feature-scope]]
+//! package = "your-library-name"
+//! features = ["b"]
+//! default-features = false
+//! ```
+
 use anyhow::{Context, Result};
 use clap::{Arg, ArgMatches, Command};
 use serde::Deserialize;
