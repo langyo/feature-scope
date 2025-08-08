@@ -57,7 +57,7 @@ use serde::Deserialize;
 use std::{
     collections::{HashMap, HashSet},
     env,
-    path::PathBuf,
+    path::{Path, PathBuf},
     process,
 };
 
@@ -182,8 +182,8 @@ fn run_feature_scope(matches: &ArgMatches) -> Result<()> {
     )
 }
 
-fn find_root_manifest(start_dir: &PathBuf) -> Result<PathBuf> {
-    let mut current_dir = start_dir.clone();
+fn find_root_manifest(start_dir: &Path) -> Result<PathBuf> {
+    let mut current_dir = start_dir.to_path_buf();
 
     loop {
         let cargo_toml = current_dir.join("Cargo.toml");
@@ -203,25 +203,19 @@ fn find_root_manifest(start_dir: &PathBuf) -> Result<PathBuf> {
 
 fn determine_default_package(
     root_cargo_toml: &CargoToml,
-    root_manifest_path: &PathBuf,
+    root_manifest_path: &Path,
 ) -> Result<String> {
     if let Some(workspace) = &root_cargo_toml.workspace {
         // Workspace mode: use the first default-members or first members
         if let Some(default_members) = &workspace.default_members {
             if let Some(first_default) = default_members.first() {
-                return Ok(extract_package_name_from_path(
-                    first_default,
-                    root_manifest_path,
-                )?);
+                return extract_package_name_from_path(first_default, root_manifest_path);
             }
         }
 
         if let Some(members) = &workspace.members {
             if let Some(first_member) = members.first() {
-                return Ok(extract_package_name_from_path(
-                    first_member,
-                    root_manifest_path,
-                )?);
+                return extract_package_name_from_path(first_member, root_manifest_path);
             }
         }
 
@@ -236,10 +230,7 @@ fn determine_default_package(
     }
 }
 
-fn extract_package_name_from_path(
-    member_path: &str,
-    root_manifest_path: &PathBuf,
-) -> Result<String> {
+fn extract_package_name_from_path(member_path: &str, root_manifest_path: &Path) -> Result<String> {
     let root_dir = root_manifest_path.parent().unwrap();
     let member_manifest = root_dir.join(member_path).join("Cargo.toml");
 
@@ -268,7 +259,7 @@ fn handle_single_package(cargo_toml: &CargoToml) -> Result<(Vec<String>, Vec<Str
             if let Some(feature_scope_decl) = &metadata.feature_scope_decl {
                 // Collect all declared feature scopes
                 for feature_name in feature_scope_decl.features.keys() {
-                    all_scope_features.insert(format!("__scope_{}", feature_name));
+                    all_scope_features.insert(format!("__scope_{feature_name}"));
                 }
 
                 // Iteratively parse default features and their dependencies
@@ -285,9 +276,9 @@ fn handle_single_package(cargo_toml: &CargoToml) -> Result<(Vec<String>, Vec<Str
 
                 // Add cfg parameters for enabled features
                 for feature in &enabled_features {
-                    all_scope_features.insert(format!("__scope_{}", feature));
+                    all_scope_features.insert(format!("__scope_{feature}"));
                     cfg_args.push(String::from("--cfg"));
-                    cfg_args.push(format!("__scope_{}", feature));
+                    cfg_args.push(format!("__scope_{feature}"));
                 }
 
                 if let Some(feature_scope) = &metadata.feature_scope {
@@ -305,12 +296,11 @@ fn handle_single_package(cargo_toml: &CargoToml) -> Result<(Vec<String>, Vec<Str
 
                                 for enabled_feature in scope_enabled_features {
                                     cfg_args.push(String::from("--cfg"));
-                                    cfg_args.push(format!("__scope_{}", enabled_feature));
+                                    cfg_args.push(format!("__scope_{enabled_feature}"));
                                 }
                             } else {
                                 eprintln!(
-                                    "Warning: feature '{}' not declared in feature-scope-decl",
-                                    feature
+                                    "Warning: feature '{feature}' not declared in feature-scope-decl"
                                 );
                             }
                         }
@@ -324,7 +314,7 @@ fn handle_single_package(cargo_toml: &CargoToml) -> Result<(Vec<String>, Vec<Str
     let mut check_cfg_args = Vec::new();
     for scope_feature in all_scope_features {
         check_cfg_args.push(String::from("--check-cfg"));
-        check_cfg_args.push(format!("cfg({})", scope_feature));
+        check_cfg_args.push(format!("cfg({scope_feature})"));
     }
 
     Ok((cfg_args, check_cfg_args))
@@ -353,7 +343,7 @@ fn resolve_feature_dependencies(
 
 fn handle_workspace_package(
     root_cargo_toml: &CargoToml,
-    root_manifest_path: &PathBuf,
+    root_manifest_path: &Path,
     target_package: &str,
 ) -> Result<(Vec<String>, Vec<String>)> {
     let mut cfg_args = Vec::new();
@@ -386,17 +376,17 @@ fn handle_workspace_package(
     }
 
     // Collect feature scopes defined in feature-scope-decl of all packages
-    for (_, (_, package)) in &workspace_packages {
+    for (_, package) in workspace_packages.values() {
         if let Some(metadata) = &package.metadata {
             if let Some(feature_scope_decl) = &metadata.feature_scope_decl {
                 // Collect all declared feature scopes
                 for feature_name in feature_scope_decl.features.keys() {
-                    all_scope_features.insert(format!("__scope_{}", feature_name));
+                    all_scope_features.insert(format!("__scope_{feature_name}"));
                 }
 
                 if let Some(defaults) = &feature_scope_decl.default {
                     for feature in defaults {
-                        all_scope_features.insert(format!("__scope_{}", feature));
+                        all_scope_features.insert(format!("__scope_{feature}"));
                     }
                 }
             }
@@ -429,7 +419,7 @@ fn handle_workspace_package(
                                     || dep_feature_scope_decl
                                         .default
                                         .as_ref()
-                                        .map_or(false, |d| d.contains(feature))
+                                        .is_some_and(|d| d.contains(feature))
                                 {
                                     // Iteratively parse feature dependencies
                                     let mut enabled_features = HashSet::new();
@@ -441,7 +431,7 @@ fn handle_workspace_package(
 
                                     for enabled_feature in enabled_features {
                                         cfg_args.push(String::from("--cfg"));
-                                        cfg_args.push(format!("__scope_{}", enabled_feature));
+                                        cfg_args.push(format!("__scope_{enabled_feature}"));
                                     }
                                 } else {
                                     eprintln!(
@@ -464,7 +454,7 @@ fn handle_workspace_package(
 
                                         for enabled_feature in enabled_features {
                                             cfg_args.push(String::from("--cfg"));
-                                            cfg_args.push(format!("__scope_{}", enabled_feature));
+                                            cfg_args.push(format!("__scope_{enabled_feature}"));
                                         }
                                     }
                                 }
@@ -496,7 +486,7 @@ fn handle_workspace_package(
     let mut check_cfg_args = Vec::new();
     for scope_feature in all_scope_features {
         check_cfg_args.push(String::from("--check-cfg"));
-        check_cfg_args.push(format!("cfg({})", scope_feature));
+        check_cfg_args.push(format!("cfg({scope_feature})"));
     }
 
     Ok((cfg_args, check_cfg_args))
@@ -545,12 +535,12 @@ fn execute_cargo_command(
         cargo_cmd.arg(arg);
     }
 
-    println!("Running: {:?}", cargo_cmd);
+    println!("Running: {cargo_cmd:?}");
     if !cfg_args.is_empty() {
-        println!("cfg_args: {:?}", cfg_args);
+        println!("cfg_args: {cfg_args:?}");
     }
     if !check_cfg_args.is_empty() {
-        println!("check_cfg_args: {:?}", check_cfg_args);
+        println!("check_cfg_args: {check_cfg_args:?}");
     }
 
     // Execute cargo command

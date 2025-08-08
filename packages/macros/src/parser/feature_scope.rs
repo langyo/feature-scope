@@ -11,7 +11,7 @@ pub struct FeatureScope {
 impl Parse for FeatureScope {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let ident: Ident = input.parse()?;
-        let ident = Ident::new(&format!("__scope_{}", ident), ident.span());
+        let ident = Ident::new(&format!("__scope_{ident}"), ident.span());
         Ok(FeatureScope { ident })
     }
 }

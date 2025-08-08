@@ -14,7 +14,7 @@ impl Parse for FeatureScopeDefault {
             Ok(FeatureScopeDefault { ident: None })
         } else {
             let ident: Ident = input.parse()?;
-            let ident = Ident::new(&format!("__scope_{}", ident), ident.span());
+            let ident = Ident::new(&format!("__scope_{ident}"), ident.span());
             Ok(FeatureScopeDefault { ident: Some(ident) })
         }
     }
