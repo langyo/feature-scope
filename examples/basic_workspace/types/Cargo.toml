@@ -17,6 +17,6 @@ feature-scope = { workspace = true }
 
 
 [package.metadata.feature-scope-decl]
-default = []
+default = ["a"]
 a = []
 b = []

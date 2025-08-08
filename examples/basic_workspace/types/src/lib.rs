@@ -1,4 +1,4 @@
-#[feature_scope::feature_scope(a)]
+#[feature_scope::feature_scope_default(a)]
 pub fn test() {
     println!("a type");
 }
@@ -9,6 +9,11 @@ pub fn test() {
 }
 
 #[feature_scope::feature_scope_default]
-pub fn test() {
+pub fn test2() {
     println!("default type");
+}
+
+#[feature_scope::feature_scope(b)]
+pub fn test2() {
+    println!("b type");
 }

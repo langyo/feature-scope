@@ -1,5 +1,5 @@
 [package]
-name = "entry_b"
+name = "entry_custom"
 version.workspace = true
 edition.workspace = true
 publish = false
