@@ -1,0 +1,98 @@
+[config]
+default_to_workspace = false
+
+[tasks.test-examples]
+description = "Test examples to verify correct output"
+script_runner = "@duckscript"
+script = '''
+echo "=== Testing Examples ==="
+
+# Change to examples directory
+cd examples/basic_workspace
+
+# Build all packages
+echo "Building workspace..."
+exec --fail-on-error cargo feature-scope build
+
+# Test entry_default
+echo ""
+echo "Testing entry_default..."
+result = exec cargo feature-scope run -p entry_default
+
+echo "entry_default output:"
+echo ${result.stdout}
+
+# Check if output contains "a type"
+contains_a_type = contains ${result.stdout} "a type"
+if not ${contains_a_type}
+    echo "❌ entry_default missing 'a type'"
+    exit 1
+end
+
+# Check if output contains "default type"
+contains_default_type = contains ${result.stdout} "default type"
+if not ${contains_default_type}
+    echo "❌ entry_default missing 'default type'"
+    exit 1
+end
+
+echo "✅ entry_default output is correct"
+
+# Test entry_custom
+echo ""
+echo "Testing entry_custom..."
+result = exec cargo feature-scope run -p entry_custom
+
+echo "entry_custom output:"
+echo ${result.stdout}
+
+# Check if output contains "b type"
+contains_b_type = contains ${result.stdout} "b type"
+if not ${contains_b_type}
+    echo "❌ entry_custom missing 'b type'"
+    exit 1
+end
+
+# Count occurrences of "b type" by splitting and checking
+lines = split ${result.stdout} "\n"
+b_type_count = set 0
+
+for line in ${lines}
+    trimmed_line = trim ${line}
+    if equals ${trimmed_line} "b type"
+        b_type_count = calc ${b_type_count} + 1
+    end
+end
+
+if not equals ${b_type_count} 2
+    echo "❌ entry_custom should output 'b type' twice, but got ${b_type_count} times"
+    exit 1
+end
+
+echo "✅ entry_custom output is correct"
+
+echo ""
+echo "🎉 All example tests passed!"
+'''
+
+[tasks.test-examples-with-install]
+description = "Install cargo-feature-scope and test examples"
+dependencies = ["install-cargo-feature-scope", "test-examples"]
+
+[tasks.install-cargo-feature-scope]
+description = "Install cargo-feature-scope CLI tool"
+command = "cargo"
+args = ["install", "--path", "packages/cli"]
+
+[tasks.test-all]
+description = "Run all tests including examples"
+dependencies = ["test", "test-examples"]
+
+[tasks.test]
+description = "Run unit tests"
+command = "cargo"
+args = ["test", "--workspace", "--all-targets", "--all-features"]
+
+[tasks.ci-test]
+description = "Run CI tests (includes installing tools)"
+dependencies = ["install-cargo-feature-scope", "test", "test-examples"]

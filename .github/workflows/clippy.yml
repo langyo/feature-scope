@@ -9,7 +9,7 @@ on:
       - 'Cargo.toml'
       - 'Cargo.lock'
   push:
-    branches: [master]
+    branches: [main]
 
 jobs:
   clippy:
@@ -33,6 +33,9 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
 
+      - name: Install cargo-feature-scope
+        run: cargo install --path packages/cli
+
       - name: Run clippy
         run: |
           cargo clippy \
@@ -40,3 +43,10 @@ jobs:
             --all-features \
             --workspace \
             -- -D warnings
+
+      - name: Run clippy on examples with cargo-feature-scope
+        run: |
+          cd examples/basic_workspace
+          cargo feature-scope build
+          # Run clippy on each example package
+          cargo feature-scope clippy -- -D warnings

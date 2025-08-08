@@ -1,15 +1,15 @@
-name: Clippy
+name: Test
 
 on:
   pull_request:
     paths:
-      - '.github/workflows/clippy.yml'
+      - '.github/workflows/test.yml'
       - 'packages/**/*'
       - 'examples/**/*'
       - 'Cargo.toml'
       - 'Cargo.lock'
   push:
-    branches: [master]
+    branches: [main]
 
 jobs:
   clippy:
@@ -32,6 +32,12 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
 
+      - name: Install cargo-make
+        run: cargo install cargo-make
+
+      - name: Install cargo-feature-scope
+        run: cargo install --path packages/cli
+
       - name: Run unit test
         run: |
           cargo test \
@@ -39,3 +45,6 @@ jobs:
             --all-features \
             --workspace \
             --no-fail-fast
+
+      - name: Test examples with cargo-make
+        run: cargo make test-examples

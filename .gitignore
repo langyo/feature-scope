@@ -1,2 +1,8 @@
 target
 Cargo.lock
+
+# Debug and test files
+output_*.txt
+debug_*
+*.tmp
+test_examples.*
